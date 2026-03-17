@@ -1,6 +1,22 @@
 import Faculty from "../models/Faculty.js";
-import cloudinary from "../config/cloudinary.js"; // Assuming Cloudinary is configured
-import fs from "fs";
+import cloudinary from "../config/cloudinary.js";
+
+// Upload utility for memory storage
+const streamUpload = (fileBuffer) => {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      { folder: "idealab/faculties" },
+      (error, result) => {
+        if (result) {
+          resolve(result);
+        } else {
+          reject(error);
+        }
+      }
+    );
+    uploadStream.end(fileBuffer);
+  });
+};
 
 // @desc    Get all faculties
 // @route   GET /api/faculties
@@ -42,14 +58,8 @@ export const createFaculty = async (req, res) => {
     let photoUrl = "";
 
     if (req.file) {
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: "idealab/faculties",
-      });
+      const result = await streamUpload(req.file.buffer);
       photoUrl = result.secure_url;
-      // Remove temp file
-      if (fs.existsSync(req.file.path)) {
-        fs.unlinkSync(req.file.path);
-      }
     }
 
     if (!photoUrl) {
@@ -87,14 +97,8 @@ export const updateFaculty = async (req, res) => {
 
       if (req.file) {
         // Upload new photo
-        const result = await cloudinary.uploader.upload(req.file.path, {
-          folder: "idealab/faculties",
-        });
+        const result = await streamUpload(req.file.buffer);
         faculty.photo = result.secure_url;
-        // Remove temp file
-        if (fs.existsSync(req.file.path)) {
-          fs.unlinkSync(req.file.path);
-        }
       }
 
       const updatedFaculty = await faculty.save();

@@ -4,7 +4,7 @@ import bcrypt from "bcrypt";
 
 export const signup = async (req, res) => {
   try {
-    const { name, year, branch, rollNo, password } = req.body;
+    const { name, year, branch, rollNo, email, password } = req.body;
 
     const userExists = await User.findOne({ rollNo });
 
@@ -20,6 +20,7 @@ export const signup = async (req, res) => {
       year,
       branch,
       rollNo,
+      email,
       password: hashedPassword,
     });
 
@@ -33,6 +34,7 @@ export const signup = async (req, res) => {
           year: user.year,
           branch: user.branch,
           rollNo: user.rollNo,
+          email: user.email,
           role: user.role,
         },
       });
@@ -61,6 +63,7 @@ export const login = async (req, res) => {
           year: user.year,
           branch: user.branch,
           rollNo: user.rollNo,
+          email: user.email,
           role: user.role,
         },
       });

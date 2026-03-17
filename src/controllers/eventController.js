@@ -31,17 +31,26 @@ export const getEvents = async (req, res) => {
 
 export const createEvent = async (req, res) => {
   try {
-    const { eventName, eventDate, description } = req.body;
+    const { eventName, eventDate, description, location } = req.body;
+    let imageUrl = "";
+
+    if (req.file) {
+      const result = await streamUpload(req.file.buffer);
+      imageUrl = result.secure_url;
+    }
 
     const event = await Event.create({
       eventName,
       eventDate,
       description,
+      location,
+      image: imageUrl,
       createdBy: req.user._id,
     });
 
     res.status(201).json({ success: true, event });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ success: false, message: "Server error", error: error.message });
   }
 };
@@ -59,6 +68,33 @@ export const deleteEvent = async (req, res) => {
 
     res.status(200).json({ success: true, message: "Event deleted" });
   } catch (error) {
+    res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+};
+
+export const updateEvent = async (req, res) => {
+  try {
+    const { eventName, eventDate, description, location } = req.body;
+    const event = await Event.findById(req.params.id);
+
+    if (!event) {
+      return res.status(404).json({ success: false, message: "Event not found" });
+    }
+
+    event.eventName = eventName || event.eventName;
+    event.eventDate = eventDate || event.eventDate;
+    event.description = description || event.description;
+    event.location = location || event.location;
+
+    if (req.file) {
+      const result = await streamUpload(req.file.buffer);
+      event.image = result.secure_url;
+    }
+
+    await event.save();
+    res.status(200).json({ success: true, event });
+  } catch (error) {
+    console.error(error);
     res.status(500).json({ success: false, message: "Server error", error: error.message });
   }
 };
@@ -132,6 +168,18 @@ export const getEventRegistrations = async (req, res) => {
   try {
     const registrations = await EventRegistration.find()
       .populate("event", "eventName")
+      .populate("student", "name rollNo email")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({ success: true, registrations });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+};
+
+export const getEventRegistrationsByEventId = async (req, res) => {
+  try {
+    const registrations = await EventRegistration.find({ event: req.params.id })
       .populate("student", "name rollNo email")
       .sort({ createdAt: -1 });
 

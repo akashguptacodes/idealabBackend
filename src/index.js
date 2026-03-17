@@ -8,6 +8,7 @@ import authRoutes from "./routes/authRoutes.js";
 import eventRoutes from "./routes/eventRoutes.js";
 import announcementRoutes from "./routes/announcementRoutes.js";
 import facultyRoutes from "./routes/facultyRoutes.js";
+import contactRoutes from "./routes/contactRoutes.js";
 
 dotenv.config();
 
@@ -32,6 +33,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/announcements", announcementRoutes);
 app.use("/api/faculties", facultyRoutes);
+app.use("/api/contact", contactRoutes);
 
 // Base route
 app.get("/", (req, res) => {

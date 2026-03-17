@@ -30,6 +30,11 @@ const userSchema = new mongoose.Schema(
         ref: "Event",
       },
     ],
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     password: {
       type: String,
       required: true,
